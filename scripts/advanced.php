@@ -322,7 +322,7 @@ $newconfig = get_config();
       <p>When the disk becomes full, you can choose to 'purge' old files to make room for new ones or 'keep' your data and stop all services instead.<br>Note: you can exclude specific files from 'purge' on the Recordings page.</p>
       <br>
       <label for="purge_threshold">Purge Threshold (Disk Used %):</label>
-      <input name="purge_threshold" type="number" style="width:6em;" min="20" max="99" step="1" value="<?php print($newconfig['PURGE_THRESHOLD']);?>"/>
+      <input name="purge_threshold" type="number" style="width:6em;" min="0" max="99" step="1" value="<?php print($newconfig['PURGE_THRESHOLD']);?>"/>
       <p>Defines how full the disk should be before the purge operations occur.<br>Note: This variable is still active if Keep is set. This means that the servies will be stopped at the purge threshold.</p><br>
       <label for="max_files_species">Number of files to keep for each species :</label>
       <input name="max_files_species" type="number" style="width:6em;" min="0" step="1" value="<?php print($newconfig['MAX_FILES_SPECIES']);?>"/>
