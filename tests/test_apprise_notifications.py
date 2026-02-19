@@ -144,7 +144,13 @@ class TestAppriseNotifications(unittest.TestCase):
         settings_dict['APPRISE_ONLY_NOTIFY_SPECIES_NAMES'] = 'Quailfinch'
         mock_load_settings.return_value = settings_dict
         sendAppriseNotifications(**self.get_default_params())
+        # Not excluded. Confirm notifications.
+        self.assertEqual(mock_notify.call_count, 1)
 
+        mock_notify.reset_mock()
+        settings_dict['APPRISE_ONLY_NOTIFY_SPECIES_NAMES'] = 'Quailfinch,'
+        mock_load_settings.return_value = settings_dict
+        sendAppriseNotifications(**self.get_default_params())
         # Not excluded. Confirm notifications.
         self.assertEqual(mock_notify.call_count, 1)
 
@@ -167,7 +173,12 @@ class TestAppriseNotifications(unittest.TestCase):
         settings_dict['APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2'] = 'Quailfinch'
         mock_load_settings.return_value = settings_dict
         sendAppriseNotifications(**self.get_default_params())
+        # No wanted species. Confirm no notifications.
+        self.assertEqual(mock_notify.call_count, 0)
 
+        settings_dict['APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2'] = 'Quailfinch,'
+        mock_load_settings.return_value = settings_dict
+        sendAppriseNotifications(**self.get_default_params())
         # No wanted species. Confirm no notifications.
         self.assertEqual(mock_notify.call_count, 0)
 
@@ -175,7 +186,6 @@ class TestAppriseNotifications(unittest.TestCase):
         settings_dict['APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2'] = 'Quailfinch,Great Crested Flycatcher'
         mock_load_settings.return_value = settings_dict
         sendAppriseNotifications(**self.get_default_params())
-
         self.assertEqual(mock_notify.call_count, 1)
 
 
