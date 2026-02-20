@@ -1,8 +1,9 @@
 <?php
+ob_start();
 
 /* Prevent XSS input */
-$_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
-$_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+$_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+$_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 
 session_start();
 
@@ -17,7 +18,8 @@ $restore = "cat $home/BirdSongs/restore.log";
 
 if(is_authenticated() && (!isset($_SESSION['behind']) || !isset($_SESSION['behind_time']) || time() > $_SESSION['behind_time'] + 86400)) {
   shell_exec("sudo -u".$user." git -C ".$home."/BirdNET-Pi fetch > /dev/null 2>/dev/null &");
-  $str = trim(shell_exec("sudo -u".$user." git -C ".$home."/BirdNET-Pi status"));
+  $str = trim(shell_exec("sudo -u".$user." git -C ".$home."/BirdNET-Pi status") ?? '');
+  $num_commits_behind = '0';
   if (preg_match("/behind '.*?' by (\d+) commit(s?)\b/", $str, $matches)) {
     $num_commits_behind = $matches[1];
   }
@@ -25,9 +27,6 @@ if(is_authenticated() && (!isset($_SESSION['behind']) || !isset($_SESSION['behin
     $num1 = (int) $matches[1];
     $num2 = (int) $matches[2];
     $num_commits_behind = $num1 + $num2;
-  }
-  if (stripos($str, "Your branch is up to date") !== false) {
-    $num_commits_behind = '0';
   }
   $_SESSION['behind'] = $num_commits_behind;
   $_SESSION['behind_time'] = time();
@@ -173,6 +172,7 @@ if(isset($_GET['view'])){
       <button type=\"submit\" name=\"view\" value=\"Included\" form=\"views\">Custom Species List</button>
       <button type=\"submit\" name=\"view\" value=\"Excluded\" form=\"views\">Excluded Species List</button>
       <button type=\"submit\" name=\"view\" value=\"Whitelisted\" form=\"views\">Whitelist Species List</button>
+      <button type=\"submit\" name=\"view\" value=\"Target Score\" form=\"views\">Target Score Species</button>
       <button type=\"submit\" name=\"view\" value=\"Species Management\" form=\"views\">Species Management</button>
       </form>
       </div>";
@@ -202,6 +202,14 @@ if(isset($_GET['view'])){
         update_species_list("./scripts/whitelist_species_list.txt", $_GET['species'], isset($_GET['add']));
     }
     $species_list="whitelist";
+    include('./scripts/species_list.php');
+  }
+  if($_GET['view'] == "Target Score"){
+    ensure_authenticated();
+    if(isset($_GET['species']) && (isset($_GET['add']) or isset($_GET['del']))){
+        update_species_list("./scripts/target_score_species_list.txt", $_GET['species'], isset($_GET['add']));
+    }
+    $species_list="target_score";
     include('./scripts/species_list.php');
   }
   if($_GET['view'] == "Species Management"){

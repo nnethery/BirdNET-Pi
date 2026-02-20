@@ -13,7 +13,11 @@
     } elseif ($species_list=="whitelist") {
         $title="Whitelisted";
         $message="Once the desired species has been highlighted, click it and then click ADD to have it whitelisted. This species will be detected even if below the Species Occurrence Frequency Threshold defined in the settings.<br>This is not a recommended way of working : it is preferable to first try first both Species Occurrence models (v1 and v2.4).";
-        $selectedfilename = './scripts/whitelist_species_list.txt';   
+        $selectedfilename = './scripts/whitelist_species_list.txt';
+    } elseif ($species_list=="target_score") {
+        $title="Target Score";
+        $message="Species in this list will have their raw model scores logged to Parquet files every analysis cycle. This is useful for research and detailed analysis. Score logging must also be enabled in Advanced Settings.";
+        $selectedfilename = './scripts/target_score_species_list.txt';
     }
     
 
