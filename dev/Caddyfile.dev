@@ -1,0 +1,23 @@
+:8080 {
+	root * /srv/extracted
+	file_server browse
+
+	# These services don't run in the dev environment
+	handle /stats* {
+		respond "Streamlit stats service is not available in the dev environment. Use the 'Best Recordings' view instead." 503
+	}
+	handle /log* {
+		respond "Log viewer service is not available in the dev environment." 503
+	}
+	handle /terminal* {
+		respond "Web terminal service is not available in the dev environment." 503
+	}
+	handle /stream* {
+		respond "Live audio stream is not available in the dev environment." 503
+	}
+
+	php_fastcgi unix//var/run/php-fpm.sock {
+		resolve_root_symlink
+		env DOCUMENT_ROOT /srv/extracted
+	}
+}

@@ -1,0 +1,20 @@
+FROM php:8.2-fpm
+
+RUN apt-get update && apt-get install -y \
+    libsqlite3-dev caddy sqlite3 sudo python3 \
+    && docker-php-ext-install pdo_sqlite \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=UTC
+
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g $GID birdnet && useradd -m -u $UID -g $GID birdnet \
+    && echo "birdnet ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/birdnet
+
+COPY dev/Caddyfile.dev /etc/caddy/Caddyfile
+COPY dev/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8080
+ENTRYPOINT ["/entrypoint.sh"]

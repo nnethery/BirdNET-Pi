@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - birdsongs:/home/birdnet/BirdSongs
+
+  analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile.analysis
+    volumes:
+      - .:/app
+      - birdsongs:/home/birdnet/BirdSongs
+      - ${XDG_RUNTIME_DIR}/pulse:/run/pulse:ro
+    environment:
+      - PULSE_SERVER=unix:/run/pulse/native
+      - HOME=/home/birdnet
+
+volumes:
+  birdsongs:

@@ -158,6 +158,74 @@ For more information : https://github.com/alexbelgium/hassio-addons/blob/master/
 BirdNET-Pi can also be run as as a docker container.
 For more information : https://github.com/alexbelgium/hassio-addons/blob/master/birdnet-pi/README_standalone.md
 
+## Development
+
+A Docker Compose setup is included for local development and testing without a Raspberry Pi. It runs two services:
+
+- **web** -- PHP-FPM + Caddy serving the full web UI on port 8080
+- **analysis** -- Python analysis pipeline that feeds test audio in a loop and runs BirdNET inference
+
+### Prerequisites
+
+- Docker and Docker Compose
+- ~2 GB disk for model files (Perch v2 downloads on first run)
+
+### Quick start
+
+```bash
+# Start both services (first build takes a few minutes)
+docker compose -f docker-compose.dev.yml up -d --build
+
+# Follow analysis logs to see detections
+docker compose -f docker-compose.dev.yml logs -f analysis
+```
+
+Open http://localhost:8080/views.php in your browser.
+
+- **Username:** `birdnet`
+- **Password:** `dev`
+
+**Not available in dev:** Species Stats (Streamlit), View Log (GoTTY), Web Terminal, Live Stream -- these require separate services that only run on a full Pi install.
+
+The analysis service loops a 30-second test recording of *Pica pica* (Eurasian Magpie), so you should see detections appearing within a minute or two. Daily charts are generated automatically every 60 seconds when the analysis service is running.
+
+### Configuration
+
+Edit `dev/birdnet.dev.conf` to change settings. Key defaults:
+
+- **MODEL=Perch_v2** -- uses the Perch v2 model (~389 MB, auto-downloaded)
+- **TARGET_SCORE_LOGGING=1** -- Parquet score logging enabled
+- **CONFIDENCE=0.7** -- minimum detection confidence
+
+Changes to the conf require restarting the analysis service:
+
+```bash
+docker compose -f docker-compose.dev.yml restart analysis
+```
+
+### Target Score Logging
+
+When `TARGET_SCORE_LOGGING=1`, raw model scores for species in `target_score_species_list.txt` are saved to Parquet files under `BirdSongs/TargetScores/`. You can manage the species list from the web UI: Tools > Target Score Species.
+
+To inspect the Parquet files:
+
+```bash
+# Copy a parquet file out of the shared volume
+docker compose -f docker-compose.dev.yml exec analysis \
+  ls /home/birdnet/BirdSongs/TargetScores/
+
+# Or from Python
+python3 -c "import pyarrow.parquet as pq; print(pq.read_table('path/to/scores.parquet').to_pandas())"
+```
+
+### Stopping
+
+```bash
+docker compose -f docker-compose.dev.yml down
+# To also remove the shared volume (deletes recordings and DB):
+docker compose -f docker-compose.dev.yml down -v
+```
+
 ## Cool Links
 
 - [Marie Lelouche's <i>Out of Spaces</i>](https://www.lestanneries.fr/exposition/marie-lelouche-out-of-spaces/) using BirdNET-Pi in post-sculpture VR! [Press Kit](https://github.com/mcguirepr89/BirdNET-Pi-assets/blob/main/dp_out_of_spaces_marie_lelouche_digital_05_01_22.pdf)
