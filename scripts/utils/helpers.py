@@ -1,11 +1,14 @@
 import glob
 import json
+import logging
 import os
 import re
 import subprocess
 from collections import OrderedDict
 from configparser import ConfigParser
 from itertools import chain
+
+log = logging.getLogger(__name__)
 
 _settings = None
 
@@ -87,6 +90,9 @@ def get_language(language=None, model=None):
         model = get_settings()['MODEL']
     if model == 'Perch_v2':
         file_name = os.path.join(MODEL_PATH, f'l18n/labels_{language}_perch.json')
+        if not os.path.isfile(file_name) and language != 'en':
+            log.warning("Perch labels not available for language '%s', falling back to English", language)
+            file_name = os.path.join(MODEL_PATH, 'l18n/labels_en_perch.json')
     else:
         file_name = os.path.join(MODEL_PATH, f'l18n/labels_{language}.json')
     with open(file_name) as f:

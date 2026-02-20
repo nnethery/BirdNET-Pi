@@ -79,6 +79,7 @@ if(isset($_GET["latitude"])){
   } else {
     $data_model_version = 1;
   }
+  $perch_birdnet_filter = isset($_GET['perch_birdnet_filter']) ? 1 : 0;
   $only_notify_species_names = htmlspecialchars_decode($_GET['only_notify_species_names'], ENT_QUOTES);
   $only_notify_species_names_2 = htmlspecialchars_decode($_GET['only_notify_species_names_2'], ENT_QUOTES);
 
@@ -160,6 +161,11 @@ if(isset($_GET["latitude"])){
   $contents = preg_replace("/MODEL=.*/", "MODEL=$model", $contents);
   $contents = preg_replace("/SF_THRESH=.*/", "SF_THRESH=$sf_thresh", $contents);
   $contents = preg_replace("/DATA_MODEL_VERSION=.*/", "DATA_MODEL_VERSION=$data_model_version", $contents);
+  if(preg_match("/PERCH_BIRDNET_FILTER=.*/", $contents)) {
+    $contents = preg_replace("/PERCH_BIRDNET_FILTER=.*/", "PERCH_BIRDNET_FILTER=$perch_birdnet_filter", $contents);
+  } else {
+    $contents = preg_replace("/DATA_MODEL_VERSION=.*/", "DATA_MODEL_VERSION=$data_model_version\nPERCH_BIRDNET_FILTER=$perch_birdnet_filter", $contents);
+  }
   $contents = preg_replace("/APPRISE_ONLY_NOTIFY_SPECIES_NAMES=.*/", "APPRISE_ONLY_NOTIFY_SPECIES_NAMES=\"$only_notify_species_names\"", $contents);
   $contents = preg_replace("/APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2=.*/", "APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2=\"$only_notify_species_names_2\"", $contents);
 
@@ -240,6 +246,7 @@ $config = get_config($force_reload=true);
     } else {
       document.getElementById("soft").style.display="none";
     }
+    document.getElementById("perch_opts").style.display = this.value == "Perch_v2" ? "unset" : "none";
   });
 }, false);
 function sendTestNotification(e) {
@@ -279,6 +286,11 @@ function sendTestNotification(e) {
       ?>
       </select>
       <br>
+      <span <?php if($config['MODEL'] != "Perch_v2") { ?>style="display: none"<?php } ?> id="perch_opts">
+      <input type="checkbox" name="perch_birdnet_filter" <?php if(isset($config['PERCH_BIRDNET_FILTER']) && $config['PERCH_BIRDNET_FILTER'] == 1) { echo "checked"; };?> >
+      <label for="perch_birdnet_filter">Filter Perch results to BirdNET species list</label>
+      <p>When enabled, Perch detections are limited to species that also appear in the BirdNET V2.4 label set (~6,000 species instead of ~15,000). Reduces false positives from obscure taxa.</p>
+      </span>
       <span <?php if(!in_array($config['MODEL'], ["BirdNET_GLOBAL_6K_V2.4_Model_FP16", "BirdNET-Go_classifier_20250916"])) { ?>style="display: none"<?php } ?> id="soft">
       <input type="checkbox" name="data_model_version" <?php if($config['DATA_MODEL_VERSION'] == 2) { echo "checked"; };?> >
       <label for="data_model_version">Species range model V2.4 - V2</label>  [ <a target="_blank" href="https://github.com/kahst/BirdNET-Analyzer/discussions/234">Info here</a> ]<br>
