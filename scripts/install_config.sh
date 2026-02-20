@@ -286,6 +286,11 @@ CUSTOM_IMAGE_TITLE=""
 ## RARE_SPECIES_THRESHOLD defines after how many days a species is considered as rare and highlighted on overview page
 RARE_SPECIES_THRESHOLD=30
 
+## Target Species Score Logging
+## Save raw model scores for target species to Parquet files
+TARGET_SCORE_LOGGING=0
+TARGET_SCORE_MAX_FILE_MB=200
+
 ## These are just for debugging
 LAST_RUN=
 THIS_RUN=

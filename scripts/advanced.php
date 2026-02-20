@@ -244,6 +244,19 @@ if (isset($_GET["max_files_species"])) {
     }
   }
 
+  if(isset($_GET["target_score_logging"])) {
+    $contents = preg_replace("/TARGET_SCORE_LOGGING=.*/", "TARGET_SCORE_LOGGING=1", $contents);
+  } else {
+    $contents = preg_replace("/TARGET_SCORE_LOGGING=.*/", "TARGET_SCORE_LOGGING=0", $contents);
+  }
+
+  if(isset($_GET["target_score_max_file_mb"])) {
+    $target_score_max_file_mb = $_GET["target_score_max_file_mb"];
+    if(strcmp($target_score_max_file_mb,$config['TARGET_SCORE_MAX_FILE_MB']) !== 0) {
+      $contents = preg_replace("/TARGET_SCORE_MAX_FILE_MB=.*/", "TARGET_SCORE_MAX_FILE_MB=$target_score_max_file_mb", $contents);
+    }
+  }
+
   if (isset($_GET["LogLevel_BirdnetRecordingService"])) {
     $birdnet_recording_service_log_level = trim($_GET["LogLevel_BirdnetRecordingService"]);
 	if (strcmp($birdnet_recording_service_log_level, $config['LogLevel_BirdnetRecordingService']) !== 0) {
@@ -638,6 +651,19 @@ foreach($formats as $format){
                 </td>
             </tr>
         </table>
+      <br>
+      <table class="settingstable"><tr><td>
+      <h2>Target Score Logging</h2>
+      <label for="target_score_logging">Enable Target Score Logging: </label>
+      <input type="checkbox" name="target_score_logging" <?php if(isset($newconfig['TARGET_SCORE_LOGGING']) && $newconfig['TARGET_SCORE_LOGGING'] == 1) { echo "checked"; };?> >
+      <p>When enabled, raw model confidence scores for your target species are saved to Parquet files (float16, gzip compressed) for offline analysis.</p>
+      <p>Target species are configured in <b>~/BirdNET-Pi/target_score_species_list.txt</b> using the same format as other species lists (one <i>SciName_CommonName</i> per line).</p>
+      <p>Score files are saved to: <b><?php echo $newconfig['RECS_DIR']; ?>/TargetScores/</b><br>
+      Each service start creates a new session folder.</p><br>
+      <label for="target_score_max_file_mb">Max File Size (MB): </label>
+      <input name="target_score_max_file_mb" type="number" style="width:5em;" min="1" max="10000" step="1" value="<?php echo isset($newconfig['TARGET_SCORE_MAX_FILE_MB']) ? $newconfig['TARGET_SCORE_MAX_FILE_MB'] : 200; ?>"/>
+      <p>Parquet files are split into parts when they exceed this size. Default: 200 MB.</p>
+      </td></tr></table>
       <br><br>
       <input type="hidden" name="view" value="Advanced">
 <div class="float">

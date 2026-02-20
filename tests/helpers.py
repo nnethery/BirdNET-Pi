@@ -31,6 +31,8 @@ class Settings(dict):
             "APPRISE_NOTIFY_NEW_SPECIES_EACH_DAY": "0",
             "APPRISE_MINIMUM_SECONDS_BETWEEN_NOTIFICATIONS_PER_SPECIES": "0",
             "APPRISE_ONLY_NOTIFY_SPECIES_NAMES": "",
-            "APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2": ""
+            "APPRISE_ONLY_NOTIFY_SPECIES_NAMES_2": "",
+            "TARGET_SCORE_LOGGING": "0",
+            "TARGET_SCORE_MAX_FILE_MB": "200"
         }
         return cls(settings)

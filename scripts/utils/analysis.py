@@ -13,6 +13,12 @@ from .models import get_model
 log = logging.getLogger(__name__)
 
 MODEL = None
+SCORE_LOGGER = None
+
+
+def set_score_logger(logger):
+    global SCORE_LOGGER
+    SCORE_LOGGER = logger
 
 
 def loadCustomSpeciesList(path):
@@ -59,7 +65,7 @@ def readAudioData(path, overlap, sample_rate, chunk_duration):
     return chunks
 
 
-def analyzeAudioData(chunks, overlap, lat, lon, week):
+def analyzeAudioData(chunks, overlap, lat, lon, week, file_date=None, file_name=None):
     detections = []
     model = load_global_model()
 
@@ -69,11 +75,15 @@ def analyzeAudioData(chunks, overlap, lat, lon, week):
     model.set_meta_data(lat, lon, week)
     predicted_species_list = model.get_species_list()
 
-    # Parse every chunk
-    for chunk in chunks:
+    for i, chunk in enumerate(chunks):
         p = model.predict(chunk)
         log.debug("PPPPP: %s", p)
         detections.append(p)
+
+        if SCORE_LOGGER is not None and file_date is not None:
+            chunk_start = i * (model.chunk_duration - overlap)
+            chunk_end = chunk_start + model.chunk_duration
+            SCORE_LOGGER.log_scores(file_date, file_name or "", chunk_start, chunk_end, p)
 
     labeled = {}
     pred_start = 0.0
@@ -164,7 +174,8 @@ def run_analysis(file):
 
     # Process audio data and get detections
     raw_detections, predicted_species_list = analyzeAudioData(audio_data, conf.getfloat('OVERLAP'), conf.getfloat('LATITUDE'),
-                                                              conf.getfloat('LONGITUDE'), file.week)
+                                                              conf.getfloat('LONGITUDE'), file.week,
+                                                              file_date=file.file_date, file_name=file.file_name)
     confident_detections = []
     for time_slot, entries in raw_detections.items():
         sci_name, confidence = entries[0]

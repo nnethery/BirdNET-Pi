@@ -5,17 +5,19 @@ import re
 import signal
 import sys
 import threading
+from datetime import datetime
 from queue import Queue
 from subprocess import CalledProcessError
 
 import inotify.adapters
 from inotify.constants import IN_CLOSE_WRITE
 
-from utils.analysis import load_global_model, run_analysis
+from utils.analysis import load_global_model, run_analysis, loadCustomSpeciesList, set_score_logger
 from utils.helpers import get_settings, get_wav_files, ANALYZING_NOW
 from utils.classes import ParseFileName
 from utils.reporting import extract_detection, summary, write_to_file, write_to_db, apprise, bird_weather, heartbeat, \
     update_json_file
+from utils.score_logger import TargetScoreLogger
 
 shutdown = False
 
@@ -28,9 +30,29 @@ def sig_handler(sig_num, curr_stack_frame):
     shutdown = True
 
 
+def _init_score_logger(conf):
+    if conf.get('TARGET_SCORE_LOGGING', '0') != '1':
+        return None
+    target_species = loadCustomSpeciesList(os.path.expanduser("~/BirdNET-Pi/target_score_species_list.txt"))
+    if not target_species:
+        log.warning("TARGET_SCORE_LOGGING enabled but target_score_species_list.txt is empty or missing")
+        return None
+    output_dir = os.path.join(
+        conf.get('RECS_DIR', os.path.expanduser('~/BirdSongs')),
+        'TargetScores',
+        'session_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    max_file_mb = int(conf.get('TARGET_SCORE_MAX_FILE_MB', '200'))
+    logger = TargetScoreLogger(target_species, output_dir, max_file_mb=max_file_mb)
+    logger.start()
+    set_score_logger(logger)
+    log.info("Target score logging: %d species, dir=%s", len(target_species), output_dir)
+    return logger
+
+
 def main():
     load_global_model()
     conf = get_settings()
+    score_logger = _init_score_logger(conf)
     i = inotify.adapters.Inotify()
     i.add_watch(os.path.join(conf['RECS_DIR'], 'StreamData'), mask=IN_CLOSE_WRITE)
 
@@ -78,6 +100,8 @@ def main():
     report_queue.put(None)
     thread.join()
     report_queue.join()
+    if score_logger:
+        score_logger.stop()
 
 
 def process_file(file_name, report_queue):
