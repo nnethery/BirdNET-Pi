@@ -31,6 +31,7 @@ USER=$USER
 
 export HOME=$HOME
 export USER=$USER
+export BIRDNETPI_URL=${BIRDNETPI_URL:-}
 
 PACKAGES_MISSING=
 for cmd in git jq ; do

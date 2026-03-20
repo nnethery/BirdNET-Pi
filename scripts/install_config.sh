@@ -85,7 +85,7 @@ ICE_PWD=birdnetpi
 ## will be web-hosted. If you do not own a domain, or would just prefer to keep
 ## the BirdNET-Pi on your local network, keep this EMPTY.
 
-BIRDNETPI_URL=
+BIRDNETPI_URL=${BIRDNETPI_URL:-}
 
 #----------------------------  RTSP Stream URL  -------------------------------#
 

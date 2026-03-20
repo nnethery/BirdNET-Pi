@@ -2,6 +2,14 @@
 source /etc/birdnet/birdnet.conf
 my_dir=$HOME/BirdNET-Pi/scripts
 set -x
+# Priority: BIRDNETPI_URL (from birdnet.conf or env var) > hostname.local > :80 catch-all
+if [ -n "${BIRDNETPI_URL}" ]; then
+  CADDY_ADDRESS="http://${BIRDNETPI_URL}"
+elif [ -n "$(hostname)" ]; then
+  CADDY_ADDRESS="http://$(hostname).local"
+else
+  CADDY_ADDRESS=":80"
+fi
 [ -d /etc/caddy ] || mkdir /etc/caddy
 if [ -f /etc/caddy/Caddyfile ];then
   cp /etc/caddy/Caddyfile{,.original}
@@ -9,7 +17,7 @@ fi
 if ! [ -z ${CADDY_PWD} ];then
 HASHWORD=$(caddy hash-password --plaintext ${CADDY_PWD})
 cat << EOF > /etc/caddy/Caddyfile
-http:// ${BIRDNETPI_URL} {
+${CADDY_ADDRESS} {
   root * ${EXTRACTED}
   file_server browse
   handle /By_Date/* {
@@ -45,7 +53,7 @@ http:// ${BIRDNETPI_URL} {
 EOF
 else
   cat << EOF > /etc/caddy/Caddyfile
-http:// ${BIRDNETPI_URL} {
+${CADDY_ADDRESS} {
   root * ${EXTRACTED}
   file_server browse
   handle /By_Date/* {
