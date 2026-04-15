@@ -290,6 +290,7 @@ RARE_SPECIES_THRESHOLD=30
 ## Target Species Score Logging
 ## Save raw model scores for target species to Parquet files
 TARGET_SCORE_LOGGING=0
+TARGET_SCORE_USE_INCLUDE_LIST=1
 TARGET_SCORE_MAX_FILE_MB=200
 
 ## These are just for debugging

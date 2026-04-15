@@ -250,6 +250,12 @@ if (isset($_GET["max_files_species"])) {
     $contents = preg_replace("/TARGET_SCORE_LOGGING=.*/", "TARGET_SCORE_LOGGING=0", $contents);
   }
 
+  if(isset($_GET["target_score_use_include_list"])) {
+    $contents = preg_replace("/TARGET_SCORE_USE_INCLUDE_LIST=.*/", "TARGET_SCORE_USE_INCLUDE_LIST=1", $contents);
+  } else {
+    $contents = preg_replace("/TARGET_SCORE_USE_INCLUDE_LIST=.*/", "TARGET_SCORE_USE_INCLUDE_LIST=0", $contents);
+  }
+
   if(isset($_GET["target_score_max_file_mb"])) {
     $target_score_max_file_mb = $_GET["target_score_max_file_mb"];
     if(strcmp($target_score_max_file_mb,$config['TARGET_SCORE_MAX_FILE_MB']) !== 0) {
@@ -658,6 +664,9 @@ foreach($formats as $format){
       <input type="checkbox" name="target_score_logging" <?php if(isset($newconfig['TARGET_SCORE_LOGGING']) && $newconfig['TARGET_SCORE_LOGGING'] == 1) { echo "checked"; };?> >
       <p>When enabled, raw model confidence scores for your target species are saved to Parquet files (float16, gzip compressed) for offline analysis.</p>
       <p>Target species are configured in <b>~/BirdNET-Pi/target_score_species_list.txt</b> using the same format as other species lists (one <i>SciName_CommonName</i> per line).</p>
+      <label for="target_score_use_include_list">Use Custom Species List for score logging: </label>
+      <input type="checkbox" name="target_score_use_include_list" <?php if(!isset($newconfig['TARGET_SCORE_USE_INCLUDE_LIST']) || $newconfig['TARGET_SCORE_USE_INCLUDE_LIST'] == 1) { echo "checked"; };?> >
+      <p>When enabled, score logging uses the Custom Species List (include_species_list.txt) instead of the separate target_score_species_list.txt.</p>
       <p>Score files are saved to: <b><?php echo $newconfig['RECS_DIR']; ?>/TargetScores/</b><br>
       Each service start creates a new session folder.</p><br>
       <label for="target_score_max_file_mb">Max File Size (MB): </label>

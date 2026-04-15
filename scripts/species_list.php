@@ -81,6 +81,15 @@
 </div>
 </div>
 
+<div class="customlabels" style="clear:both; padding-top:1em;">
+  <form method="POST" action="views.php" enctype="multipart/form-data">
+    <input type="hidden" name="view" value="<?php echo $title; ?>">
+    <label>Upload species list (.txt, one species per line):</label><br>
+    <input type="file" name="species_file" accept=".txt">
+    <button type="submit">Upload &amp; Replace List</button>
+  </form>
+</div>
+
 <script>
     // Store the original list of options in a variable
     var originalOptions = {};

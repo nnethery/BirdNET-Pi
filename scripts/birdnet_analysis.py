@@ -33,9 +33,14 @@ def sig_handler(sig_num, curr_stack_frame):
 def _init_score_logger(conf):
     if conf.get('TARGET_SCORE_LOGGING', '0') != '1':
         return None
-    target_species = loadCustomSpeciesList(os.path.expanduser("~/BirdNET-Pi/target_score_species_list.txt"))
+    if conf.get('TARGET_SCORE_USE_INCLUDE_LIST', '1') == '1':
+        score_list_path = os.path.expanduser("~/BirdNET-Pi/include_species_list.txt")
+        log.info("Using include_species_list.txt for target score logging")
+    else:
+        score_list_path = os.path.expanduser("~/BirdNET-Pi/target_score_species_list.txt")
+    target_species = loadCustomSpeciesList(score_list_path)
     if not target_species:
-        log.warning("TARGET_SCORE_LOGGING enabled but target_score_species_list.txt is empty or missing")
+        log.warning("TARGET_SCORE_LOGGING enabled but %s is empty or missing", score_list_path)
         return None
     output_dir = os.path.join(
         conf.get('RECS_DIR', os.path.expanduser('~/BirdSongs')),

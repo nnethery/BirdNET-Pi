@@ -112,6 +112,17 @@ function copyOutput(elem) {
 
 <div class="views">
 <?php
+function upload_species_list($filename) {
+    if (!isset($_FILES['species_file']) || $_FILES['species_file']['error'] !== UPLOAD_ERR_OK) {
+        return;
+    }
+    $content = file_get_contents($_FILES['species_file']['tmp_name']);
+    $content = preg_replace('/\r\n?/', "\n", $content);
+    $content = preg_replace('/^\h*\v+/m', '', $content);
+    $content = trim($content) . "\n";
+    file_put_contents($filename, $content);
+}
+
 function update_species_list($filename, $species, $add) {
     if($add){
         $str = file_get_contents($filename);
@@ -138,26 +149,27 @@ function update_species_list($filename, $species, $add) {
     }
 }
 
-if(isset($_GET['view'])){
-  if($_GET['view'] == "System Info"){echo "<iframe src='phpsysinfo/index.php'></iframe>";}
-  if($_GET['view'] == "System Controls"){
+$view = $_GET['view'] ?? $_POST['view'] ?? null;
+if($view !== null){
+  if($view == "System Info"){echo "<iframe src='phpsysinfo/index.php'></iframe>";}
+  if($view == "System Controls"){
     ensure_authenticated();
     include('scripts/system_controls.php');
   }
-  if($_GET['view'] == "Services"){
+  if($view == "Services"){
     ensure_authenticated();
     include('scripts/service_controls.php');
   }
-  if($_GET['view'] == "Spectrogram"){include('spectrogram.php');}
-  if($_GET['view'] == "View Log"){echo "<body style=\"scroll:no;overflow-x:hidden;\"><iframe style=\"width:calc( 100% + 1em);\" src=\"log\"></iframe></body>";}
-  if($_GET['view'] == "Overview"){include('overview.php');}
-  if($_GET['view'] == "Todays Detections"){include('todays_detections.php');}
-  if($_GET['view'] == "Kiosk"){$kiosk = true;include('todays_detections.php');}
-  if($_GET['view'] == "Species Stats"){include('stats.php');}
-  if($_GET['view'] == "Weekly Report"){include('weekly_report.php');}
-  if($_GET['view'] == "Streamlit"){echo "<iframe src=\"stats\"></iframe>";}
-  if($_GET['view'] == "Daily Charts"){include('history.php');}
-  if($_GET['view'] == "Tools"){
+  if($view == "Spectrogram"){include('spectrogram.php');}
+  if($view == "View Log"){echo "<body style=\"scroll:no;overflow-x:hidden;\"><iframe style=\"width:calc( 100% + 1em);\" src=\"log\"></iframe></body>";}
+  if($view == "Overview"){include('overview.php');}
+  if($view == "Todays Detections"){include('todays_detections.php');}
+  if($view == "Kiosk"){$kiosk = true;include('todays_detections.php');}
+  if($view == "Species Stats"){include('stats.php');}
+  if($view == "Weekly Report"){include('weekly_report.php');}
+  if($view == "Streamlit"){echo "<iframe src=\"stats\"></iframe>";}
+  if($view == "Daily Charts"){include('history.php');}
+  if($view == "Tools"){
     ensure_authenticated();
     $url = $_SERVER['SERVER_NAME']."/scripts/adminer.php";
     echo "<div class=\"centered\">
@@ -177,52 +189,64 @@ if(isset($_GET['view'])){
       </form>
       </div>";
   }
-  if($_GET['view'] == "Recordings"){include('play.php');}
-  if($_GET['view'] == "Settings"){include('scripts/config.php');} 
-  if($_GET['view'] == "Advanced"){include('scripts/advanced.php');}
-  if($_GET['view'] == "Included"){
+  if($view == "Recordings"){include('play.php');}
+  if($view == "Settings"){include('scripts/config.php');} 
+  if($view == "Advanced"){include('scripts/advanced.php');}
+  if($view == "Included"){
     ensure_authenticated();
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        upload_species_list("./scripts/include_species_list.txt");
+    }
     if(isset($_GET['species']) && (isset($_GET['add']) or isset($_GET['del']))){
         update_species_list("./scripts/include_species_list.txt", $_GET['species'], isset($_GET['add']));
     }
     $species_list="include";
     include('./scripts/species_list.php');
   }
-  if($_GET['view'] == "Excluded"){
+  if($view == "Excluded"){
     ensure_authenticated();
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        upload_species_list("./scripts/exclude_species_list.txt");
+    }
     if(isset($_GET['species']) && (isset($_GET['add']) or isset($_GET['del']))){
         update_species_list("./scripts/exclude_species_list.txt", $_GET['species'], isset($_GET['add']));
     }
     $species_list="exclude";
     include('./scripts/species_list.php');
   }
-  if($_GET['view'] == "Whitelisted"){
+  if($view == "Whitelisted"){
     ensure_authenticated();
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        upload_species_list("./scripts/whitelist_species_list.txt");
+    }
     if(isset($_GET['species']) && (isset($_GET['add']) or isset($_GET['del']))){
         update_species_list("./scripts/whitelist_species_list.txt", $_GET['species'], isset($_GET['add']));
     }
     $species_list="whitelist";
     include('./scripts/species_list.php');
   }
-  if($_GET['view'] == "Target Score"){
+  if($view == "Target Score"){
     ensure_authenticated();
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        upload_species_list("./scripts/target_score_species_list.txt");
+    }
     if(isset($_GET['species']) && (isset($_GET['add']) or isset($_GET['del']))){
         update_species_list("./scripts/target_score_species_list.txt", $_GET['species'], isset($_GET['add']));
     }
     $species_list="target_score";
     include('./scripts/species_list.php');
   }
-  if($_GET['view'] == "Species Management"){
+  if($view == "Species Management"){
     ensure_authenticated();
     include('scripts/species_tools.php');
   }
-  if($_GET['view'] == "File"){
+  if($view == "File"){
     echo "<iframe src='scripts/filemanager/filemanager.php'></iframe>";
   }
-  if($_GET['view'] == "Adminer"){
+  if($view == "Adminer"){
     echo "<iframe src='scripts/adminer.php'></iframe>";
   }
-  if($_GET['view'] == "Webterm"){
+  if($view == "Webterm"){
     ensure_authenticated('You cannot access the web terminal');
     echo "<iframe src='terminal'></iframe>";
   }
